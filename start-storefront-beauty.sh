@@ -10,5 +10,6 @@ if [ -z "$NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY" ]; then
   sleep 10
 fi
 
-echo "Starting Beauty Storefront development server on port 8001..."
-pnpm dev
+export HOSTNAME="0.0.0.0"
+echo "Starting Beauty Storefront development server on 0.0.0.0:8001..."
+pnpm exec next dev -H 0.0.0.0 -p 8001
