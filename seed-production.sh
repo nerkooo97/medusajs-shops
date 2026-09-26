@@ -29,7 +29,7 @@ if [ ! -f ".env" ] || ! grep -q "DATABASE_URL" .env; then
 fi
 
 echo "1/5 🌍 Inicijalizacija regija (Europe, DK, BA), valuta (EUR, BAM) i skladišta..."
-npx medusa exec ./src/migration-scripts/initial-data-seed.ts
+npx medusa exec ./src/migration-scripts/initial-data-seed.ts || true
 
 echo "2/5 🏪 Postavljanje prodajnih kanala (Alati & Šminka), Publishable ključeva i artikala..."
 npx medusa exec ./src/scripts/setup-multichannel.ts
