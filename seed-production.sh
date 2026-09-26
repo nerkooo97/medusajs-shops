@@ -1,50 +1,49 @@
 #!/bin/sh
 set -e
 
+# Export default Docker network environment variables
+export DATABASE_URL="${DATABASE_URL:-postgres://postgres:postgres@postgres:5432/medusa-store}"
+export REDIS_URL="${REDIS_URL:-redis://redis:6379}"
+export JWT_SECRET="${JWT_SECRET:-supersecret}"
+export COOKIE_SECRET="${COOKIE_SECRET:-supersecret}"
+export NODE_ENV="development"
+
 echo "=========================================================="
-echo "🌱 Pokretanje Seed skripte za MedusaJS..."
+echo "🌱 Pokretanje Brze Seed skripte za MedusaJS..."
+echo "🔌 Povezivanje na bazu: $DATABASE_URL"
 echo "=========================================================="
 
-# Ako se skripta pokreće sa VPS hosta a Docker je aktivan:
-if [ ! -f "/server/apps/backend/medusa-config.ts" ] && command -v docker >/dev/null 2>&1 && docker ps 2>/dev/null | grep -q medusa_backend; then
-  echo "📦 Pokretanje skripti unutar kontejnera medusa_backend..."
-  docker exec -it -w /server/apps/backend medusa_backend npx medusa exec ./src/migration-scripts/initial-data-seed.ts
-  docker exec -it -w /server/apps/backend medusa_backend npx medusa exec ./src/scripts/setup-multichannel.ts
-  docker exec -it -w /server/apps/backend medusa_backend npx medusa exec ./src/scripts/setup-categories.ts
-  docker exec -it -w /server/apps/backend medusa_backend npx medusa exec ./src/scripts/seed-category-icons.ts
-  docker exec -it -w /server/apps/backend medusa_backend npx medusa exec ./src/scripts/setup-inventory-and-groups.ts
-  docker exec -it -w /server/apps/backend medusa_backend npx medusa exec ./src/scripts/seed-demo-products.ts
-  echo "=========================================================="
-  echo "🎉 SEED USPEŠNO ZAVRŠEN NA PRODUKCIJI!"
-  echo "=========================================================="
-  exit 0
-fi
-
-# Pokretanje direktno u direktoriju backenda (unutar kontejnera ili lokalno)
+# Prebaci se u backend direktorij
 if [ -d "/server/apps/backend" ]; then
   cd /server/apps/backend
 elif [ -d "apps/backend" ]; then
   cd apps/backend
 fi
 
-echo "1/6 🌍 Inicijalizacija regija, valuta, poreza i podrazumijevanog skladišta..."
+# Osiguraj da backend ima .env sa tačnim adresama Docker servisa
+if [ ! -f ".env" ] || ! grep -q "DATABASE_URL" .env; then
+  echo "DATABASE_URL=$DATABASE_URL" > .env
+  echo "REDIS_URL=$REDIS_URL" >> .env
+  echo "JWT_SECRET=$JWT_SECRET" >> .env
+  echo "COOKIE_SECRET=$COOKIE_SECRET" >> .env
+fi
+
+echo "1/5 🌍 Inicijalizacija regija (Europe, DK, BA), valuta (EUR, BAM) i skladišta..."
 npx medusa exec ./src/migration-scripts/initial-data-seed.ts
 
-echo "2/6 🏪 Postavljanje prodajnih kanala (Alati & Šminka) i Publishable API ključeva..."
+echo "2/5 🏪 Postavljanje prodajnih kanala (Alati & Šminka), Publishable ključeva i artikala..."
 npx medusa exec ./src/scripts/setup-multichannel.ts
 
-echo "3/6 📂 Postavljanje kategorija (Alati i Šminka)..."
+echo "3/5 📂 Postavljanje strukture kategorija (Alati & Šminka)..."
 npx medusa exec ./src/scripts/setup-categories.ts
 
-echo "4/6 ✨ Postavljanje Lucide ikonica za kategorije..."
+echo "4/5 ✨ Postavljanje Lucide ikonica za kategorije..."
 npx medusa exec ./src/scripts/seed-category-icons.ts
 
-echo "5/6 📦 Postavljanje skladišta i zaliha (Inventory)..."
+echo "5/5 📦 Postavljanje skladišta i zaliha (Inventory)..."
 npx medusa exec ./src/scripts/setup-inventory-and-groups.ts
-
-echo "6/6 🛒 Dodavanje demo proizvoda za katalog..."
-npx medusa exec ./src/scripts/seed-demo-products.ts
 
 echo "=========================================================="
 echo "🎉 SEED USPEŠNO ZAVRŠEN!"
+echo "Baza podataka je inicijalizovana i spremna za rad."
 echo "=========================================================="
