@@ -56,6 +56,7 @@ services:
       - /server/apps/backend/node_modules
     networks:
       - medusa_network
+      - dokploy-network
 
   # Storefront 1: Alati Store
   storefront:
@@ -85,6 +86,7 @@ services:
     entrypoint: ["./start-storefront.sh"]
     networks:
       - medusa_network
+      - dokploy-network
 
   # Storefront 2: Šminka & Kozmetika Store
   storefront_beauty:
@@ -114,6 +116,7 @@ services:
     entrypoint: ["./start-storefront-beauty.sh"]
     networks:
       - medusa_network
+      - dokploy-network
 
 volumes:
   postgres_data:
@@ -121,3 +124,5 @@ volumes:
 networks:
   medusa_network:
     driver: bridge
+  dokploy-network:
+    external: true
