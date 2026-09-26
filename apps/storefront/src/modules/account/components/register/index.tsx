@@ -16,59 +16,55 @@ const Register = ({ setCurrentView }: Props) => {
   const [message, formAction] = useActionState(signup, null)
 
   return (
-    <div
-      className="max-w-sm flex flex-col items-center"
-      data-testid="register-page"
-    >
-      <h1 className="text-large-semi uppercase mb-6">
-        Become a Medusa Store Member
-      </h1>
-      <p className="text-center text-base-regular text-ui-fg-base mb-4">
-        Create your Medusa Store Member profile, and get access to an enhanced
-        shopping experience.
-      </p>
+    <div className="w-full flex flex-col" data-testid="register-page">
       {message?.state === "verification_required" && (
         <div
-          className="w-full mb-4 text-center text-base-regular text-ui-fg-base bg-ui-bg-subtle border border-ui-border-base rounded-rounded p-4"
+          className="w-full mb-5 text-center text-xs text-foreground bg-muted border border-border rounded-xl p-3.5"
           data-testid="register-verification-message"
         >
-          We sent a verification link to <strong>{message.email}</strong>.
-          Please check your inbox to verify your email, then sign in.
+          Poslali smo verifikacijski link na <strong>{message.email}</strong>.
+          Molimo provjerite vaš inbox kako biste potvrdili email, a zatim se prijavite.
         </div>
       )}
-      <form className="w-full flex flex-col" action={formAction}>
-        <div className="flex flex-col w-full gap-y-2">
+
+      <form className="w-full flex flex-col gap-y-4" action={formAction}>
+        <div className="flex flex-col w-full gap-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Ime"
+              name="first_name"
+              required
+              autoComplete="given-name"
+              data-testid="first-name-input"
+            />
+            <Input
+              label="Prezime"
+              name="last_name"
+              required
+              autoComplete="family-name"
+              data-testid="last-name-input"
+            />
+          </div>
+
           <Input
-            label="First name"
-            name="first_name"
-            required
-            autoComplete="given-name"
-            data-testid="first-name-input"
-          />
-          <Input
-            label="Last name"
-            name="last_name"
-            required
-            autoComplete="family-name"
-            data-testid="last-name-input"
-          />
-          <Input
-            label="Email"
+            label="Email adresa"
             name="email"
             required
             type="email"
             autoComplete="email"
             data-testid="email-input"
           />
+
           <Input
-            label="Phone"
+            label="Broj telefona"
             name="phone"
             type="tel"
             autoComplete="tel"
             data-testid="phone-input"
           />
+
           <Input
-            label="Password"
+            label="Lozinka"
             name="password"
             required
             type="password"
@@ -76,43 +72,51 @@ const Register = ({ setCurrentView }: Props) => {
             data-testid="password-input"
           />
         </div>
+
         <ErrorMessage
           error={message?.state === "error" ? message.error : null}
           data-testid="register-error"
         />
-        <span className="text-center text-ui-fg-base text-small-regular mt-6">
-          By creating an account, you agree to Medusa Store&apos;s{" "}
-          <LocalizedClientLink
-            href="/content/privacy-policy"
-            className="underline"
-          >
-            Privacy Policy
-          </LocalizedClientLink>{" "}
-          and{" "}
+
+        <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-1">
+          Kreiranjem računa prihvatate naše{" "}
           <LocalizedClientLink
             href="/content/terms-of-use"
-            className="underline"
+            className="text-foreground underline underline-offset-2 hover:text-primary"
           >
-            Terms of Use
+            Uslove korištenja
+          </LocalizedClientLink>{" "}
+          i{" "}
+          <LocalizedClientLink
+            href="/content/privacy-policy"
+            className="text-foreground underline underline-offset-2 hover:text-primary"
+          >
+            Politiku privatnosti
           </LocalizedClientLink>
           .
-        </span>
-        <SubmitButton className="w-full mt-6" data-testid="register-button">
-          Join
+        </p>
+
+        <SubmitButton
+          className="w-full mt-1 h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all shadow-xs flex items-center justify-center cursor-pointer"
+          data-testid="register-button"
+        >
+          <span>Kreirajte račun</span>
         </SubmitButton>
       </form>
-      <span className="text-center text-ui-fg-base text-small-regular mt-6">
-        Already a member?{" "}
+
+      <div className="mt-6 text-center text-xs text-muted-foreground">
+        Već posjedujete korisnički račun?{" "}
         <button
+          type="button"
           onClick={() => setCurrentView(LOGIN_VIEW.SIGN_IN)}
-          className="underline"
+          className="text-foreground hover:underline font-semibold ml-1 cursor-pointer"
         >
-          Sign in
+          Prijavite se
         </button>
-        .
-      </span>
+      </div>
     </div>
   )
 }
 
 export default Register
+

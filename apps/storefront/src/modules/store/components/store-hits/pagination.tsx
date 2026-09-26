@@ -16,9 +16,13 @@ const SearchPagination = () => {
   const renderPage = (page: number) => (
     <button
       key={page}
-      className={clx("txt-xlarge-plus text-ui-fg-muted", {
-        "text-ui-fg-base hover:text-ui-fg-subtle": page === currentRefinement,
-      })}
+      className={clx(
+        "min-w-10 h-10 px-3 flex items-center justify-center rounded-lg text-sm font-semibold transition-all duration-150",
+        {
+          "bg-[#0053E2] text-white shadow-xs cursor-default": page === currentRefinement,
+          "bg-card hover:bg-muted text-foreground border border-border/70 hover:border-[#0053E2]/40": page !== currentRefinement,
+        }
+      )}
       disabled={page === currentRefinement}
       onClick={() => refine(page)}
     >
@@ -29,7 +33,7 @@ const SearchPagination = () => {
   const renderEllipsis = (key: string) => (
     <span
       key={key}
-      className="txt-xlarge-plus text-ui-fg-muted items-center cursor-default"
+      className="min-w-8 h-10 flex items-center justify-center text-muted-foreground select-none"
     >
       ...
     </span>

@@ -41,7 +41,14 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         <ManualTestPaymentButton notReady={notReady} data-testid={dataTestId} />
       )
     default:
-      return <Button disabled>Select a payment method</Button>
+      return (
+        <Button
+          disabled
+          className="w-full h-12 rounded-xl bg-muted text-muted-foreground font-bold text-sm"
+        >
+          Odaberite način plaćanja
+        </Button>
+      )
   }
 }
 
@@ -104,8 +111,6 @@ const StripePaymentButton = ({
             },
           },
         },
-        // Only leave the site when the selected method actually requires it, so
-        // card payments still complete inline.
         redirect: "if_required",
       })
       .then(({ error, paymentIntent }) => {
@@ -142,11 +147,11 @@ const StripePaymentButton = ({
       <Button
         disabled={disabled || notReady}
         onClick={handlePayment}
-        size="large"
+        className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-extrabold text-sm uppercase tracking-wider shadow-sm cursor-pointer transition-all"
         isLoading={submitting}
         data-testid={dataTestId}
       >
-        Place order
+        Potvrdi narudžbu
       </Button>
       <ErrorMessage
         error={errorMessage}
@@ -172,7 +177,6 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
 
   const handlePayment = () => {
     setSubmitting(true)
-
     onPaymentCompleted()
   }
 
@@ -182,10 +186,10 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
         disabled={notReady}
         isLoading={submitting}
         onClick={handlePayment}
-        size="large"
+        className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-extrabold text-sm uppercase tracking-wider shadow-sm cursor-pointer transition-all"
         data-testid="submit-order-button"
       >
-        Place order
+        Potvrdi narudžbu
       </Button>
       <ErrorMessage
         error={errorMessage}

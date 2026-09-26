@@ -30,9 +30,9 @@ const ProfilePassword: React.FC<MyInformationProps> = ({ customer: _customer }) 
       className="w-full"
     >
       <AccountInfo
-        label="Password"
+        label="Lozinka"
         currentInfo={
-          <span>The password is not shown for security reasons</span>
+          <span>Lozinka nije prikazana iz sigurnosnih razloga</span>
         }
         isSuccess={successState}
         isError={false}
@@ -42,21 +42,21 @@ const ProfilePassword: React.FC<MyInformationProps> = ({ customer: _customer }) 
       >
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Old password"
+            label="Trenutna lozinka"
             name="old_password"
             required
             type="password"
             data-testid="old-password-input"
           />
           <Input
-            label="New password"
+            label="Nova lozinka"
             type="password"
             name="new_password"
             required
             data-testid="new-password-input"
           />
           <Input
-            label="Confirm password"
+            label="Potvrdite novu lozinku"
             type="password"
             name="confirm_password"
             required

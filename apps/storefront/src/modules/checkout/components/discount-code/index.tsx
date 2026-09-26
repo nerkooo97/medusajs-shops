@@ -61,10 +61,10 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               type="button"
-              className="txt-medium text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+              className="txt-medium text-ui-fg-interactive hover:text-ui-fg-interactive-hover cursor-pointer"
               data-testid="add-discount-button"
             >
-              Add Promotion Code(s)
+              Dodaj promo kod / kupon
             </button>
 
             {/* <Tooltip content="You can add multiple promotion codes">
@@ -80,14 +80,16 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                   id="promotion-input"
                   name="code"
                   type="text"
+                  placeholder="Unesite kod kupona..."
                   autoFocus={false}
                   data-testid="discount-input"
                 />
                 <SubmitButton
                   variant="secondary"
                   data-testid="discount-apply-button"
+                  className="cursor-pointer"
                 >
-                  Apply
+                  Primijeni
                 </SubmitButton>
               </div>
 
@@ -103,7 +105,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
           <div className="w-full flex items-center">
             <div className="flex flex-col w-full">
               <Heading className="txt-medium mb-2">
-                Promotion(s) applied:
+                Primijenjene promocije:
               </Heading>
 
               {promotions.map((promotion) => {
@@ -158,7 +160,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                       >
                         <Trash size={14} />
                         <span className="sr-only">
-                          Remove discount code from order
+                          Ukloni promo kod iz narudžbe
                         </span>
                       </button>
                     )}

@@ -40,8 +40,10 @@ const StoreSearchBox = () => {
   }
 
   return (
-    <div className="mb-6 flex items-center gap-x-3 border-b border-ui-border-base">
-      <MagnifyingGlass className="shrink-0 text-ui-fg-muted" />
+    <div className="mb-6 relative flex items-center w-full">
+      <div className="absolute left-3.5 flex items-center pointer-events-none text-muted-foreground">
+        <MagnifyingGlass className="size-4" />
+      </div>
       <input
         type="search"
         value={inputValue}
@@ -49,20 +51,20 @@ const StoreSearchBox = () => {
           setInputValue(event.target.value)
           refine(event.target.value)
         }}
-        placeholder="Search products"
-        aria-label="Search products"
-        className="txt-medium w-full bg-transparent py-3 text-ui-fg-base outline-none placeholder:text-ui-fg-muted [&::-webkit-search-cancel-button]:hidden"
+        placeholder="Pretraži ponudu artikala..."
+        aria-label="Pretraži proizvode"
+        className="w-full bg-card border border-border/80 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] rounded-xl pl-10 pr-10 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground shadow-2xs [&::-webkit-search-cancel-button]:hidden"
         data-testid="store-search-input"
       />
       {inputValue && (
         <button
           type="button"
           onClick={clear}
-          aria-label="Clear search"
-          className="shrink-0 text-ui-fg-muted hover:text-ui-fg-base"
+          aria-label="Očisti pretragu"
+          className="absolute right-3.5 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
           data-testid="store-search-clear"
         >
-          <XMarkMini />
+          <XMarkMini className="size-4" />
         </button>
       )}
     </div>

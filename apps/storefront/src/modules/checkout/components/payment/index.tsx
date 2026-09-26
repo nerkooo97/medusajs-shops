@@ -1,23 +1,23 @@
 "use client"
+
 import { RadioGroup } from "@headlessui/react"
 import { isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
-import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
+import { CreditCard } from "@medusajs/icons"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import PaymentContainer, {
   StripePaymentContainer,
 } from "@modules/checkout/components/payment-container"
-import Divider from "@modules/common/components/divider"
 import {
   Button,
   Container,
-  Heading,
   Text,
   clx,
 } from "@modules/common/components/ui"
 import { HttpTypes } from "@medusajs/types"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
+import { CheckCircle2 } from "lucide-react"
 
 const Payment = ({
   cart,
@@ -110,75 +110,88 @@ const Payment = ({
     setError(null)
   }, [isOpen])
 
+  const isCompleted = !isOpen && paymentReady
+
   return (
-    <div className="bg-white">
-      <div className="flex flex-row items-center justify-between mb-6">
-        <Heading
-          level="h2"
+    <div className="bg-card rounded-2xl border border-border/80 p-5 sm:p-7 shadow-xs">
+      <div className="flex flex-row items-center justify-between mb-4">
+        <h2
           className={clx(
-            "flex flex-row text-3xl-regular gap-x-2 items-baseline",
+            "flex flex-row text-xl sm:text-2xl font-extrabold text-foreground gap-x-2.5 items-center",
             {
               "opacity-50 pointer-events-none select-none":
                 !isOpen && !paymentReady,
             }
           )}
         >
-          Payment
-          {!isOpen && paymentReady && <CheckCircleSolid />}
-        </Heading>
-        {!isOpen && paymentReady && (
-          <Text>
-            <button
-              onClick={handleEdit}
-              className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
-              data-testid="edit-payment-button"
-            >
-              Edit
-            </button>
-          </Text>
+          <span>3. Način plaćanja</span>
+          {isCompleted && <CheckCircle2 className="size-5 text-emerald-600 stroke-[2.2]" />}
+        </h2>
+        {isCompleted && (
+          <button
+            onClick={handleEdit}
+            className="text-xs font-bold text-primary hover:underline cursor-pointer"
+            data-testid="edit-payment-button"
+          >
+            Izmijeni
+          </button>
         )}
       </div>
+
       <div>
         <div className={isOpen ? "block" : "hidden"}>
           {!paidByGiftcard && availablePaymentMethods?.length && (
-            <>
+            <div className="pt-2">
               <RadioGroup
                 value={selectedPaymentMethod}
                 onChange={(value: string) => setPaymentMethod(value)}
+                className="w-full"
               >
-                {availablePaymentMethods.map((paymentMethod) => (
-                  <div key={paymentMethod.id}>
-                    {isStripeLike(paymentMethod.id) ? (
-                      <StripePaymentContainer
-                        paymentProviderId={paymentMethod.id}
-                        selectedPaymentOptionId={selectedPaymentMethod}
-                        paymentInfoMap={paymentInfoMap}
-                        setError={setError}
-                        setPaymentComplete={setPaymentComplete}
-                      />
-                    ) : (
-                      <PaymentContainer
-                        paymentInfoMap={paymentInfoMap}
-                        paymentProviderId={paymentMethod.id}
-                        selectedPaymentOptionId={selectedPaymentMethod}
-                      />
-                    )}
-                  </div>
-                ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full">
+                  {availablePaymentMethods.map((paymentMethod) => {
+                    const isStripe = isStripeLike(paymentMethod.id)
+                    const isSelected = selectedPaymentMethod === paymentMethod.id
+
+                    return (
+                      <div
+                        key={paymentMethod.id}
+                        className={clx(
+                          isStripe && isSelected ? "sm:col-span-2" : "col-span-1"
+                        )}
+                      >
+                        {isStripe ? (
+                          <StripePaymentContainer
+                            paymentProviderId={paymentMethod.id}
+                            selectedPaymentOptionId={selectedPaymentMethod}
+                            paymentInfoMap={paymentInfoMap}
+                            setError={setError}
+                            setPaymentComplete={setPaymentComplete}
+                          />
+                        ) : (
+                          <PaymentContainer
+                            paymentInfoMap={paymentInfoMap}
+                            paymentProviderId={paymentMethod.id}
+                            selectedPaymentOptionId={selectedPaymentMethod}
+                          />
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
               </RadioGroup>
-            </>
+            </div>
           )}
 
           {paidByGiftcard && (
-            <div className="flex flex-col w-1/3">
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                Payment method
+            <div className="p-4 bg-muted/20 border border-border/60 rounded-xl">
+              <Text className="font-bold text-foreground text-xs uppercase tracking-wide">
+                Način plaćanja
               </Text>
               <Text
-                className="txt-medium text-ui-fg-subtle"
+                className="text-foreground/90 font-medium text-sm mt-0.5"
                 data-testid="payment-method-summary"
               >
-                Gift card
+                Poklon kartica (Gift card)
               </Text>
             </div>
           )}
@@ -188,71 +201,62 @@ const Payment = ({
             data-testid="payment-method-error-message"
           />
 
-          <Button
-            size="large"
-            className="mt-6"
-            onClick={handleSubmit}
-            isLoading={isLoading}
-            disabled={
-              (isStripeLike(selectedPaymentMethod) && !paymentComplete) ||
-              (!selectedPaymentMethod && !paidByGiftcard)
-            }
-            data-testid="submit-payment-button"
-          >
-            {!activeSession && isStripeLike(selectedPaymentMethod)
-              ? "Enter payment details"
-              : "Continue to review"}
-          </Button>
+          <div className="pt-4">
+            <Button
+              className="w-full sm:w-auto h-11 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm shadow-xs cursor-pointer transition-all"
+              onClick={handleSubmit}
+              isLoading={isLoading}
+              disabled={
+                (isStripeLike(selectedPaymentMethod) && !paymentComplete) ||
+                (!selectedPaymentMethod && !paidByGiftcard)
+              }
+              data-testid="submit-payment-button"
+            >
+              {!activeSession && isStripeLike(selectedPaymentMethod)
+                ? "Unesite podatke kartice"
+                : "Pregledaj narudžbu"}
+            </Button>
+          </div>
         </div>
 
         <div className={isOpen ? "hidden" : "block"}>
           {cart && paymentReady && activeSession ? (
-            <div className="flex items-start gap-x-1 w-full">
-              <div className="flex flex-col w-1/3">
-                <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                  Payment method
-                </Text>
-                <Text
-                  className="txt-medium text-ui-fg-subtle"
+            <div className="bg-muted/20 rounded-xl p-4 border border-border/60 flex items-center justify-between text-xs sm:text-sm">
+              <div>
+                <p className="font-bold text-foreground text-xs uppercase tracking-wide">
+                  Odabrano plaćanje
+                </p>
+                <p
+                  className="text-foreground/90 font-medium mt-0.5"
                   data-testid="payment-method-summary"
                 >
                   {paymentInfoMap[activeSession?.provider_id]?.title ||
                     activeSession?.provider_id}
-                </Text>
+                </p>
               </div>
-              <div className="flex flex-col w-1/3">
-                <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                  Payment details
-                </Text>
-                <div
-                  className="flex gap-2 txt-medium text-ui-fg-subtle items-center"
-                  data-testid="payment-details-summary"
-                >
-                  <Container className="flex items-center h-7 w-fit p-2 bg-ui-button-neutral-hover">
-                    {paymentInfoMap[selectedPaymentMethod]?.icon || (
-                      <CreditCard />
-                    )}
-                  </Container>
-                  <Text>Another step will appear</Text>
-                </div>
+              <div className="flex items-center gap-2">
+                <Container className="flex items-center size-8 p-1.5 bg-white border border-border/60 rounded-lg justify-center">
+                  {paymentInfoMap[selectedPaymentMethod]?.icon || (
+                    <CreditCard />
+                  )}
+                </Container>
               </div>
             </div>
           ) : paidByGiftcard ? (
-            <div className="flex flex-col w-1/3">
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                Payment method
-              </Text>
-              <Text
-                className="txt-medium text-ui-fg-subtle"
+            <div className="bg-muted/20 rounded-xl p-4 border border-border/60">
+              <p className="font-bold text-foreground text-xs uppercase tracking-wide">
+                Način plaćanja
+              </p>
+              <p
+                className="text-foreground/90 font-medium mt-0.5"
                 data-testid="payment-method-summary"
               >
-                Gift card
-              </Text>
+                Poklon kartica
+              </p>
             </div>
           ) : null}
         </div>
       </div>
-      <Divider className="mt-8" />
     </div>
   )
 }

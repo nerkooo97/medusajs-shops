@@ -72,6 +72,26 @@ export default async function initial_data_seed({
     },
   });
 
+  logger.info("=======================================================");
+  logger.info(`🔑 Medusa Publishable API Key: ${publishableApiKey.token}`);
+  logger.info("=======================================================");
+
+  try {
+    const fs = await import("fs");
+    const path = await import("path");
+    const storefrontEnvPath = path.resolve(process.cwd(), "../storefront/.env");
+    if (fs.existsSync(storefrontEnvPath)) {
+      let content = fs.readFileSync(storefrontEnvPath, "utf-8");
+      if (content.includes("NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=\n") || content.endsWith("NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=")) {
+        content = content.replace(/NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=.*(?:\r?\n|$)/, `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${publishableApiKey.token}\n`);
+        fs.writeFileSync(storefrontEnvPath, content, "utf-8");
+        logger.info("✨ Automatically saved publishable key to apps/storefront/.env");
+      }
+    }
+  } catch (err) {
+    logger.warn(`Could not auto-write publishable key to storefront .env: ${err}`);
+  }
+
   const {
     result: [store],
   } = await createStoresWorkflow(container).run({

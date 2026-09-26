@@ -34,23 +34,24 @@ const HitPrice = ({ hit, currencyCode }: HitPriceProps) => {
   const isRange = max > min_price
 
   return (
-    <div className="flex items-center gap-x-2" data-testid="product-price">
-      {!isRange && on_sale && original_price !== null && (
-        <Text
-          className="line-through text-ui-fg-muted"
-          data-testid="original-price"
-        >
-          {format(original_price)}
-        </Text>
-      )}
+    <div className="flex flex-wrap items-baseline gap-1.5" data-testid="product-price">
       <Text
-        className={clx("text-ui-fg-muted", {
-          "text-ui-tag-red-text": on_sale,
+        className={clx("text-sm sm:text-base font-bold tracking-tight", {
+          "text-rose-600": on_sale,
+          "text-foreground": !on_sale,
         })}
         data-testid="price"
       >
         {isRange ? `${format(min_price)} - ${format(max)}` : format(min_price)}
       </Text>
+      {!isRange && on_sale && original_price !== null && (
+        <Text
+          className="line-through text-xs text-muted-foreground font-normal"
+          data-testid="original-price"
+        >
+          {format(original_price)}
+        </Text>
+      )}
     </div>
   )
 }

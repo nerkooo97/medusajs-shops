@@ -1,10 +1,10 @@
 "use client"
 
-import { Heading, Text, clx } from "@modules/common/components/ui"
-
+import { clx } from "@modules/common/components/ui"
 import PaymentButton from "../payment-button"
 import { useSearchParams } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
+import { ShieldCheck } from "lucide-react"
 
 const Review = ({ cart }: { cart: HttpTypes.StoreCart }) => {
   const searchParams = useSearchParams()
@@ -21,34 +21,34 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart }) => {
     (cart.payment_collection || paidByGiftcard)
 
   return (
-    <div className="bg-white">
-      <div className="flex flex-row items-center justify-between mb-6">
-        <Heading
-          level="h2"
+    <div className="bg-card rounded-2xl border border-border/80 p-5 sm:p-7 shadow-xs">
+      <div className="flex flex-row items-center justify-between mb-4">
+        <h2
           className={clx(
-            "flex flex-row text-3xl-regular gap-x-2 items-baseline",
+            "flex flex-row text-xl sm:text-2xl font-extrabold text-foreground gap-x-2.5 items-center",
             {
               "opacity-50 pointer-events-none select-none": !isOpen,
             }
           )}
         >
-          Review
-        </Heading>
+          <span>4. Pregled i potvrda narudžbe</span>
+        </h2>
       </div>
+
       {isOpen && previousStepsCompleted && (
-        <>
-          <div className="flex items-start gap-x-1 w-full mb-6">
-            <div className="w-full">
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                By clicking the Place Order button, you confirm that you have
-                read, understand and accept our Terms of Use, Terms of Sale and
-                Returns Policy and acknowledge that you have read Medusa
-                Store&apos;s Privacy Policy.
-              </Text>
-            </div>
+        <div className="space-y-6 pt-1">
+          <div className="p-4 rounded-xl bg-muted/20 border border-border/60 text-xs text-muted-foreground leading-relaxed flex items-start gap-3">
+            <ShieldCheck className="size-5 text-primary shrink-0 mt-0.5" />
+            <p>
+              Klikom na dugme <strong>&quot;Potvrdi narudžbu&quot;</strong>, potvrđujete da ste pregledali detalje narudžbe,
+              te da prihvatate naše Uslove kupovine, Politiku privatnosti i Pravo na povrat u roku od 15 dana.
+            </p>
           </div>
-          <PaymentButton cart={cart} data-testid="submit-order-button" />
-        </>
+
+          <div className="w-full">
+            <PaymentButton cart={cart} data-testid="submit-order-button" />
+          </div>
+        </div>
       )}
     </div>
   )

@@ -4,6 +4,8 @@ import { OptionValueIds } from "@lib/util/product-option-filters"
 import ProductPreview from "@modules/products/components/product-preview"
 import { Pagination } from "@modules/store/components/pagination"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
+import CategorySortDropdown from "@modules/categories/components/category-sort-dropdown"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 const PRODUCT_LIMIT = 12
 
@@ -71,19 +73,56 @@ export default async function PaginatedProducts({
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
 
   return (
-    <>
-      <ul
-        className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8"
-        data-testid="products-list"
-      >
-        {products.map((p) => {
-          return (
-            <li key={p.id}>
-              <ProductPreview product={p} region={region} />
-            </li>
-          )
-        })}
-      </ul>
+    <div className="w-full">
+      {/* Products Toolbar Header - Sort button on the right */}
+      <div className="flex items-center justify-between gap-3 mb-4 w-full">
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          {count > 0 ? (
+            <>
+              Prikazano <span className="font-semibold text-foreground">{products.length}</span> od{" "}
+              <span className="font-semibold text-foreground">{count}</span>{" "}
+              {count === 1 ? "artikla" : "artikala"}
+            </>
+          ) : (
+            <span>Nema rezultata</span>
+          )}
+        </p>
+        <CategorySortDropdown sortBy={sortBy} />
+      </div>
+
+      {!products.length ? (
+        <div
+          className="py-20 text-center flex flex-col items-center justify-center bg-card border border-border/60 rounded-xl p-8 my-4 w-full"
+          data-testid="no-products"
+        >
+          <p className="text-base font-semibold text-foreground mb-1">
+            Trenutno nema dostupnih artikala u ovoj kategoriji
+          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Pokušajte odabrati drugu kategoriju ili provjerite kompletnu ponudu u našem katalogu.
+          </p>
+          <LocalizedClientLink
+            href="/store"
+            className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0053E2] text-white text-xs font-semibold hover:bg-[#0046c0] transition-colors"
+          >
+            Pregledaj sve artikle
+          </LocalizedClientLink>
+        </div>
+      ) : (
+        <ul
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 w-full"
+          data-testid="products-list"
+        >
+          {products.map((p) => {
+            return (
+              <li key={p.id}>
+                <ProductPreview product={p} region={region} />
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
       {totalPages > 1 && (
         <Pagination
           data-testid="product-pagination"
@@ -91,6 +130,6 @@ export default async function PaginatedProducts({
           totalPages={totalPages}
         />
       )}
-    </>
+    </div>
   )
 }

@@ -26,19 +26,21 @@ const Summary = ({ cart }: SummaryProps) => {
   const step = getCheckoutStep(cart)
 
   return (
-    <div className="flex flex-col gap-y-4">
-      <Heading level="h2" className="text-[2rem] leading-[2.75rem]">
-        Summary
-      </Heading>
-      <DiscountCode cart={cart} />
-      <Divider />
+    <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-2xs flex flex-col gap-y-5">
+      <h2 className="text-lg font-bold text-foreground tracking-tight pb-3 border-b border-border">
+        Pregled narudžbe
+      </h2>
       <CartTotals totals={cart} />
       <LocalizedClientLink
         href={"/checkout?step=" + step}
         data-testid="checkout-button"
+        className="w-full inline-flex items-center justify-center h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm transition-all shadow-xs cursor-pointer"
       >
-        <Button className="w-full h-10">Go to checkout</Button>
+        Nastavi na plaćanje
       </LocalizedClientLink>
+      <div className="pt-2 border-t border-border">
+        <DiscountCode cart={cart} />
+      </div>
     </div>
   )
 }

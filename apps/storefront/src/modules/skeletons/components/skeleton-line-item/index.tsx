@@ -28,6 +28,11 @@ const SkeletonLineItem = () => {
           <div className="w-12 h-6 bg-gray-200 animate-pulse" />
         </div>
       </Table.Cell>
+      <Table.Cell className="!pr-0 w-10">
+        <div className="flex justify-end">
+          <div className="size-6 bg-gray-200 rounded-md animate-pulse" />
+        </div>
+      </Table.Cell>
     </Table.Row>
   )
 }

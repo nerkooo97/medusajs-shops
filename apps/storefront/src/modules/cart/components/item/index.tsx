@@ -12,6 +12,7 @@ import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Spinner from "@modules/common/icons/spinner"
 import Thumbnail from "@modules/products/components/thumbnail"
+import { Minus, Plus } from "lucide-react"
 import { useState } from "react"
 
 type ItemProps = {
@@ -45,13 +46,13 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
   const maxQuantity = item.variant?.manage_inventory ? 10 : maxQtyFromInventory
 
   return (
-    <Table.Row className="w-full" data-testid="product-row">
-      <Table.Cell className="!pl-0 p-4 w-24">
+    <Table.Row className="w-full transition-colors hover:bg-muted/20" data-testid="product-row">
+      <Table.Cell className="!pl-0 py-4 w-20 sm:w-24">
         <LocalizedClientLink
           href={`/products/${item.product_handle}`}
-          className={clx("flex", {
-            "w-16": type === "preview",
-            "small:w-24 w-12": type === "full",
+          className={clx("flex rounded-lg overflow-hidden border border-border/70 bg-muted/20 shrink-0", {
+            "w-14 sm:w-16": type === "preview",
+            "w-16 sm:w-20": type === "full",
           })}
         >
           <Thumbnail
@@ -62,50 +63,57 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         </LocalizedClientLink>
       </Table.Cell>
 
-      <Table.Cell className="text-left">
-        <Text
-          className="txt-medium-plus text-ui-fg-base"
+      <Table.Cell className="text-left py-4">
+        <LocalizedClientLink
+          href={`/products/${item.product_handle}`}
+          className="text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-2"
           data-testid="product-title"
         >
           {item.product_title}
-        </Text>
-        <LineItemOptions variant={item.variant} data-testid="product-variant" />
+        </LocalizedClientLink>
+        <div className="mt-1">
+          <LineItemOptions variant={item.variant} data-testid="product-variant" />
+        </div>
       </Table.Cell>
 
       {type === "full" && (
-        <Table.Cell>
-          <div className="flex gap-2 items-center w-28">
-            <DeleteButton id={item.id} data-testid="product-delete-button" />
-            <CartItemSelect
-              value={item.quantity}
-              onChange={(value) => changeQuantity(parseInt(value.target.value))}
-              className="w-14 h-10 p-4"
-              data-testid="product-select-button"
-            >
-              {/* TODO: Update this with the v2 way of managing inventory */}
-              {Array.from(
-                {
-                  length: Math.min(maxQuantity, 10),
-                },
-                (_, i) => (
-                  <option value={i + 1} key={i}>
-                    {i + 1}
-                  </option>
-                )
-              )}
-
-              <option value={1} key={1}>
-                1
-              </option>
-            </CartItemSelect>
-            {updating && <Spinner />}
+        <Table.Cell className="py-4 align-middle">
+          <div className="flex flex-col gap-1 items-start">
+            <div className="inline-flex items-center border border-input rounded-lg h-9 bg-background shadow-2xs">
+              <button
+                type="button"
+                disabled={item.quantity <= 1 || updating}
+                onClick={() => changeQuantity(item.quantity - 1)}
+                aria-label="Smanji količinu"
+                className="size-8 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all rounded-l-md cursor-pointer"
+                data-testid="quantity-decrease-button"
+              >
+                <Minus className="size-3.5" />
+              </button>
+              <span
+                className="w-8 text-center text-xs font-bold text-foreground select-none"
+                data-testid="product-quantity-display"
+              >
+                {updating ? <Spinner className="inline size-3.5 animate-spin text-primary" /> : item.quantity}
+              </span>
+              <button
+                type="button"
+                disabled={item.quantity >= maxQuantity || updating}
+                onClick={() => changeQuantity(item.quantity + 1)}
+                aria-label="Povećaj količinu"
+                className="size-8 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all rounded-r-md cursor-pointer"
+                data-testid="quantity-increase-button"
+              >
+                <Plus className="size-3.5" />
+              </button>
+            </div>
+            <ErrorMessage error={error} data-testid="product-error-message" />
           </div>
-          <ErrorMessage error={error} data-testid="product-error-message" />
         </Table.Cell>
       )}
 
       {type === "full" && (
-        <Table.Cell className="hidden small:table-cell">
+        <Table.Cell className="hidden small:table-cell py-4 align-middle text-xs text-muted-foreground font-medium">
           <LineItemUnitPrice
             item={item}
             style="tight"
@@ -114,10 +122,10 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         </Table.Cell>
       )}
 
-      <Table.Cell className="!pr-0">
+      <Table.Cell className={clx("py-4 text-right align-middle", { "!pr-0": type === "preview" })}>
         <span
-          className={clx("!pr-0", {
-            "flex flex-col items-end h-full justify-center": type === "preview",
+          className={clx("font-semibold text-sm text-foreground", {
+            "!pr-0 flex flex-col items-end h-full justify-center": type === "preview",
           })}
         >
           {type === "preview" && (
@@ -137,6 +145,12 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
           />
         </span>
       </Table.Cell>
+
+      {type === "full" && (
+        <Table.Cell className="!pr-0 py-4 text-right align-middle w-10">
+          <DeleteButton id={item.id} data-testid="product-delete-button" />
+        </Table.Cell>
+      )}
     </Table.Row>
   )
 }

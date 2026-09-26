@@ -34,7 +34,7 @@ function refinementLabel(refinement: Refinement, currencyCode: string) {
   }
 
   if (attribute === priceAttribute("on_sale", currencyCode)) {
-    return "On sale"
+    return "Na akciji"
   }
 
   if (attribute === priceAttribute("min_price", currencyCode)) {
@@ -45,16 +45,16 @@ function refinementLabel(refinement: Refinement, currencyCode: string) {
     })
 
     return operator === "<=" || operator === "<"
-      ? `Up to ${amount}`
-      : `From ${amount}`
+      ? `Do ${amount}`
+      : `Od ${amount}`
   }
 
   if (attribute === CATEGORY_ATTRIBUTE) {
-    return `Category: ${label}`
+    return `Kategorija: ${label}`
   }
 
   if (attribute === LABELS_ATTRIBUTE) {
-    return `Label: ${label}`
+    return `Oznaka: ${label}`
   }
 
   return label
@@ -79,15 +79,15 @@ const CurrentRefinements = ({ currencyCode }: { currencyCode: string }) => {
     <div className="flex flex-col gap-y-3" data-testid="current-refinements">
       <div className="flex items-center justify-between gap-x-2 pr-6">
         <span className="txt-compact-small-plus text-ui-fg-subtle">
-          Applied filters
+          Aktivni filteri
         </span>
         {canClearAll && (
           <button
             onClick={clearAll}
-            className="txt-compact-small-plus text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+            className="txt-compact-small-plus text-[#0053E2] hover:underline font-medium"
             data-testid="clear-refinements"
           >
-            Clear all
+            Poništi sve
           </button>
         )}
       </div>

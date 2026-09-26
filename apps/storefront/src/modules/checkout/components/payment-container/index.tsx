@@ -1,14 +1,12 @@
 import { Radio as RadioGroupOption } from "@headlessui/react"
 import { Text, clx } from "@modules/common/components/ui"
 import React, { useContext, type JSX } from "react"
-
-import Radio from "@modules/common/components/radio"
-
-import { isManual } from "@lib/constants"
+import { isManual, isStripeLike } from "@lib/constants"
 import SkeletonCardDetails from "@modules/skeletons/components/skeleton-card-details"
 import { PaymentElement } from "@stripe/react-stripe-js"
 import PaymentTest from "../payment-test"
 import { StripeContext } from "../payment-wrapper/stripe-wrapper"
+import { Banknote, Check, CreditCard, Wallet } from "lucide-react"
 
 type PaymentContainerProps = {
   paymentProviderId: string
@@ -26,6 +24,9 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
   children,
 }) => {
   const isDevelopment = process.env.NODE_ENV === "development"
+  const isSelected = selectedPaymentOptionId === paymentProviderId
+  const isCashOnDelivery = isManual(paymentProviderId)
+  const isCard = isStripeLike(paymentProviderId)
 
   return (
     <RadioGroupOption
@@ -33,31 +34,79 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
       value={paymentProviderId}
       disabled={disabled}
       className={clx(
-        "flex flex-col gap-y-2 text-small-regular cursor-pointer py-4 border rounded-rounded px-8 mb-2 hover:shadow-borders-interactive-with-active",
+        "relative p-5 rounded-xl border text-left cursor-pointer transition-all duration-200 flex flex-col justify-between min-h-[140px] group select-none h-full",
+        isSelected
+          ? "border-[#0053E2] bg-[#0053E2]/5 shadow-xs ring-1 ring-[#0053E2]/20"
+          : "border-border/80 bg-background hover:bg-muted/30 hover:border-[#0053E2]/40 shadow-2xs",
         {
-          "border-ui-border-interactive":
-            selectedPaymentOptionId === paymentProviderId,
+          "opacity-50 cursor-not-allowed": disabled,
         }
       )}
     >
-      <div className="flex items-center justify-between ">
-        <div className="flex items-center gap-x-4">
-          <Radio checked={selectedPaymentOptionId === paymentProviderId} />
-          <Text className="text-base-regular">
-            {paymentInfoMap[paymentProviderId]?.title || paymentProviderId}
-          </Text>
-          {isManual(paymentProviderId) && isDevelopment && (
-            <PaymentTest className="hidden small:block" />
-          )}
+      <div>
+        {/* Header: Icon + Title/Subtitle + Selection Check */}
+        <div className="flex items-start justify-between gap-2 mb-1.5">
+          <div className="flex items-center gap-2.5">
+            <div
+              className={clx(
+                "size-9 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                isSelected
+                  ? "bg-[#0053E2]/10 text-[#0053E2]"
+                  : "bg-muted text-muted-foreground group-hover:text-foreground"
+              )}
+            >
+              {isCashOnDelivery ? (
+                <Banknote className="size-4.5 stroke-[2]" />
+              ) : isCard ? (
+                <CreditCard className="size-4.5 stroke-[2]" />
+              ) : (
+                <Wallet className="size-4.5 stroke-[2]" />
+              )}
+            </div>
+            <div>
+              <span className="text-sm font-bold text-foreground group-hover:text-[#0053E2] transition-colors block">
+                {paymentInfoMap[paymentProviderId]?.title || paymentProviderId}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {isCashOnDelivery
+                  ? "Plaćanje gotovinom prilikom preuzimanja"
+                  : isCard
+                  ? "Sigurno online kartično plaćanje"
+                  : "Elektronsko plaćanje"}
+              </span>
+            </div>
+          </div>
+
+          <div
+            className={clx(
+              "size-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 transition-colors",
+              isSelected
+                ? "border-[#0053E2] bg-[#0053E2] text-white"
+                : "border-muted-foreground/30 bg-card group-hover:border-[#0053E2]/50"
+            )}
+          >
+            {isSelected && <Check className="size-3 stroke-[3]" />}
+          </div>
         </div>
-        <span className="justify-self-end text-ui-fg-base">
-          {paymentInfoMap[paymentProviderId]?.icon}
-        </span>
+
+        {/* Development badge if test mode */}
+        {isCashOnDelivery && isDevelopment && (
+          <div className="mt-2">
+            <PaymentTest className="text-[11px]" />
+          </div>
+        )}
       </div>
-      {isManual(paymentProviderId) && isDevelopment && (
-        <PaymentTest className="small:hidden text-[10px]" />
-      )}
+
       {children}
+
+      {!children && (
+        <div className="flex items-baseline justify-between pt-3 border-t border-border/50 mt-3 text-xs text-muted-foreground">
+          <span>{isCashOnDelivery ? "Način preuzimanja" : "Način naplate"}</span>
+          <span className="font-semibold text-foreground">
+            {isCashOnDelivery ? "Pouzećem" : "Odmah / Online"}
+          </span>
+        </div>
+      )}
     </RadioGroupOption>
   )
 }
@@ -86,9 +135,9 @@ export const StripePaymentContainer = ({
     >
       {selectedPaymentOptionId === paymentProviderId &&
         (stripeReady ? (
-          <div className="my-4 transition-all duration-150 ease-in-out">
-            <Text className="txt-medium-plus text-ui-fg-base mb-1">
-              Enter your payment details:
+          <div className="my-3 pt-3 border-t border-border/60 transition-all duration-150 ease-in-out">
+            <Text className="text-xs font-bold text-foreground mb-2">
+              Unesite podatke vaše kartice:
             </Text>
             <PaymentElement
               options={{ layout: "accordion" }}
@@ -96,14 +145,10 @@ export const StripePaymentContainer = ({
                 setError(null)
                 setPaymentComplete(e.complete)
               }}
-              // Without a handler Stripe.js reports a failed mount as an
-              // unhandled "payment Element loaderror" and the option renders
-              // blank with no explanation. Surface it in the checkout's own
-              // error slot instead.
               onLoadError={(e) => {
                 setPaymentComplete(false)
                 setError(
-                  e.error?.message ?? "Could not load the payment methods."
+                  e.error?.message ?? "Nije moguće učitati forme za plaćanje."
                 )
               }}
             />

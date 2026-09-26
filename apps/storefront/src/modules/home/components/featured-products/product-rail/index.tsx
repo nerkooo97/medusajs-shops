@@ -27,18 +27,25 @@ export default async function ProductRail({
   }
 
   return (
-    <div className="content-container py-12 small:py-24">
-      <div className="flex justify-between mb-8">
-        <Text className="txt-xlarge">{collection.title}</Text>
+    <div className="content-container py-8 sm:py-12">
+      <div className="flex items-end justify-between mb-6 pb-3 border-b border-border/60">
+        <div>
+          <span className="text-xs font-bold uppercase tracking-wider text-[#0053E2]">
+            Kolekcija
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight mt-1">
+            {collection.title}
+          </h2>
+        </div>
         <InteractiveLink href={`/collections/${collection.handle}`}>
-          View all
+          Pogledaj sve
         </InteractiveLink>
       </div>
-      <ul className="grid grid-cols-2 small:grid-cols-3 gap-x-6 gap-y-24 small:gap-y-36">
+      <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         {pricedProducts &&
           pricedProducts.map((product) => (
             <li key={product.id}>
-              <ProductPreview product={product} region={region} isFeatured />
+              <ProductPreview product={product} region={region} />
             </li>
           ))}
       </ul>

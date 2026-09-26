@@ -29,11 +29,12 @@ const DeleteButton = ({
       )}
     >
       <button
-        className="flex gap-x-1 text-ui-fg-subtle hover:text-ui-fg-base cursor-pointer"
+        className="flex items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
         onClick={() => handleDelete(id)}
+        title="Ukloni artikal"
       >
-        {isDeleting ? <Spinner className="animate-spin" /> : <Trash />}
-        <span>{children}</span>
+        {isDeleting ? <Spinner className="animate-spin size-4" /> : <Trash className="size-4" />}
+        {children && <span className="ml-1">{children}</span>}
       </button>
     </div>
   )

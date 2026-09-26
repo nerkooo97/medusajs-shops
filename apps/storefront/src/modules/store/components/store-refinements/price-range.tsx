@@ -53,9 +53,9 @@ const PriceRange = ({ currencyCode }: { currencyCode: string }) => {
 
   return (
     <div className="flex flex-col gap-y-4">
-      <span className="txt-compact-small-plus text-ui-fg-subtle">Price</span>
+      <span className="txt-compact-small-plus text-ui-fg-subtle">Cijena</span>
 
-      <div className="flex flex-col gap-y-3 pr-6">
+      <div className="flex flex-col gap-y-3 pr-2">
         <Slider.Root
           className="relative flex h-5 w-full touch-none select-none items-center"
           value={value}
@@ -67,17 +67,17 @@ const PriceRange = ({ currencyCode }: { currencyCode: string }) => {
           // Only refine when the thumb is released, so dragging doesn't fire a
           // search per pixel.
           onValueCommit={(committed) => refine([committed[0], committed[1]])}
-          aria-label="Price range"
+          aria-label="Raspon cijene"
           data-testid="price-range"
         >
-          <Slider.Track className="relative h-0.5 w-full grow rounded-full bg-ui-border-base">
-            <Slider.Range className="absolute h-full rounded-full bg-ui-fg-interactive" />
+          <Slider.Track className="relative h-1 w-full grow rounded-full bg-ui-border-base">
+            <Slider.Range className="absolute h-full rounded-full bg-[#0053E2]" />
           </Slider.Track>
           {value.map((_, index) => (
             <Slider.Thumb
               key={index}
-              className="block h-4 w-4 rounded-full border border-ui-border-interactive bg-ui-bg-base shadow-elevation-card-rest outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
-              aria-label={index === 0 ? "Minimum price" : "Maximum price"}
+              className="block h-4 w-4 rounded-full border border-[#0053E2] bg-white shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0053E2] cursor-grab active:cursor-grabbing"
+              aria-label={index === 0 ? "Minimalna cijena" : "Maksimalna cijena"}
             />
           ))}
         </Slider.Root>

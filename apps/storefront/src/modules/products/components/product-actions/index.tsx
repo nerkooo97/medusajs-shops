@@ -3,15 +3,13 @@
 import { addToCart } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@modules/common/components/ui"
-import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
-import { useParams, usePathname, useSearchParams } from "next/navigation"
+import { useParams, usePathname, useSearchParams, useRouter } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
-import { useRouter } from "next/navigation"
+import { ShoppingCart, Heart, Check } from "lucide-react"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -36,17 +34,41 @@ export default function ProductActions({
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const [options, setOptions] = useState<Record<string, string | undefined>>({})
+  const [options, setOptions] = useState<Record<string, string | undefined>>(() => {
+    if (!product.variants?.length) return {}
+    const vId = searchParams.get("v_id")
+    const targetVariant = vId
+      ? product.variants.find((v) => v.id === vId) || product.variants[0]
+      : product.variants[0]
+    return optionsAsKeymap(targetVariant?.options) ?? {}
+  })
+
+  const [quantity, setQuantity] = useState(1)
+  const [isFavorite, setIsFavorite] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
+  const [justAdded, setJustAdded] = useState(false)
+
   const countryCode = useParams().countryCode as string
 
-  // If there is only 1 variant, preselect the options
+  // Preselect options from url param v_id, or first variant by default
   useEffect(() => {
-    if (product.variants?.length === 1) {
-      const variantOptions = optionsAsKeymap(product.variants[0].options)
-      setOptions(variantOptions ?? {})
+    if (!product.variants?.length) return
+
+    const vId = searchParams.get("v_id")
+    const targetVariant = vId
+      ? product.variants.find((v) => v.id === vId) || product.variants[0]
+      : product.variants[0]
+
+    if (targetVariant) {
+      const variantOptions = optionsAsKeymap(targetVariant.options)
+      setOptions((prev) => {
+        if (Object.keys(prev).length === 0) {
+          return variantOptions ?? {}
+        }
+        return prev
+      })
     }
-  }, [product.variants])
+  }, [product.variants, searchParams])
 
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
@@ -67,7 +89,7 @@ export default function ProductActions({
     }))
   }
 
-  //check if the selected options produce a valid variant
+  // check if the selected options produce a valid variant
   const isValidVariant = useMemo(() => {
     return product.variants?.some((v) => {
       const variantOptions = optionsAsKeymap(v.options)
@@ -94,17 +116,14 @@ export default function ProductActions({
 
   // check if the selected variant is in stock
   const inStock = useMemo(() => {
-    // If we don't manage inventory, we can always add to cart
     if (selectedVariant && !selectedVariant.manage_inventory) {
       return true
     }
 
-    // If we allow back orders on the variant, we can add to cart
     if (selectedVariant?.allow_backorder) {
       return true
     }
 
-    // If there is inventory available, we can add to cart
     if (
       selectedVariant?.manage_inventory &&
       (selectedVariant?.inventory_quantity || 0) > 0
@@ -112,12 +131,10 @@ export default function ProductActions({
       return true
     }
 
-    // Otherwise, we can't add to cart
     return false
   }, [selectedVariant])
 
   const actionsRef = useRef<HTMLDivElement>(null)
-
   const inView = useIntersection(actionsRef, "0px")
 
   // add the selected variant to the cart
@@ -126,62 +143,130 @@ export default function ProductActions({
 
     setIsAdding(true)
 
-    await addToCart({
-      variantId: selectedVariant.id,
-      quantity: 1,
-      countryCode,
-    })
-
-    setIsAdding(false)
+    try {
+      await addToCart({
+        variantId: selectedVariant.id,
+        quantity,
+        countryCode,
+      })
+      setJustAdded(true)
+      setTimeout(() => setJustAdded(false), 2500)
+    } catch (err) {
+      console.error("Greška pri dodavanju u korpu:", err)
+    } finally {
+      setIsAdding(false)
+    }
   }
 
   return (
     <>
-      <div className="flex flex-col gap-y-2" ref={actionsRef}>
-        <div>
+      <div className="flex flex-col gap-y-4" ref={actionsRef}>
+        {/* Buy Box Card */}
+        <div className="rounded-xl border border-border/80 bg-card p-5 shadow-xs flex flex-col gap-4">
+          {/* Top row: Price on left, Wishlist on right */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <span className="text-xs font-semibold text-muted-foreground block mb-0.5">
+                Cijena:
+              </span>
+              <ProductPrice product={product} variant={selectedVariant} />
+            </div>
+
+            {/* Dodaj u omiljene */}
+            <button
+              type="button"
+              onClick={() => setIsFavorite(!isFavorite)}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0 mt-1"
+            >
+              <span>Dodaj u omiljene</span>
+              <Heart
+                className={`size-4 transition-colors ${
+                  isFavorite ? "fill-primary text-primary" : "text-muted-foreground"
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Variant selection if available */}
           {(product.variants?.length ?? 0) > 1 && (
-            <div className="flex flex-col gap-y-4">
-              {(product.options || []).map((option) => {
-                return (
-                  <div key={option.id}>
-                    <OptionSelect
-                      option={option}
-                      current={options[option.id]}
-                      updateOption={setOptionValue}
-                      title={option.title ?? ""}
-                      data-testid="product-options"
-                      disabled={!!disabled || isAdding}
-                    />
-                  </div>
-                )
-              })}
-              <Divider />
+            <div className="pt-2 border-t border-border/60">
+              {(product.options || []).map((option) => (
+                <div key={option.id} className="mb-3">
+                  <OptionSelect
+                    option={option}
+                    current={options[option.id]}
+                    updateOption={setOptionValue}
+                    title={option.title ?? ""}
+                    data-testid="product-options"
+                    disabled={!!disabled || isAdding}
+                  />
+                </div>
+              ))}
             </div>
           )}
+
+          {/* Action Controls: Quantity stepper + DODAJ U KORPU */}
+          <div className="flex items-center gap-2.5 pt-1">
+            {/* Quantity Stepper */}
+            <div className="flex items-center border border-border/80 rounded-lg overflow-hidden h-11 w-20 shrink-0 bg-background">
+              <input
+                type="number"
+                min={1}
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-12 text-center font-bold text-sm bg-transparent outline-none"
+                aria-label="Količina"
+              />
+              <div className="flex flex-col border-l border-border/80 h-full w-8 justify-between">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="h-1/2 flex items-center justify-center hover:bg-muted text-xs font-bold border-b border-border/80 cursor-pointer"
+                  aria-label="Povećaj količinu"
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="h-1/2 flex items-center justify-center hover:bg-muted text-xs font-bold cursor-pointer"
+                  aria-label="Smanji količinu"
+                >
+                  -
+                </button>
+              </div>
+            </div>
+
+            {/* DODAJ U KORPU (Primary button) */}
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={
+                !inStock ||
+                !selectedVariant ||
+                !!disabled ||
+                isAdding ||
+                !isValidVariant
+              }
+              className="flex-1 h-11 bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 font-bold text-xs uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-colors px-4"
+              data-testid="add-product-button"
+            >
+              {justAdded ? (
+                <>
+                  <Check className="size-4 stroke-[2.5]" />
+                  <span>Dodano u korpu!</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="size-4 stroke-[2.2]" />
+                  <span>{isAdding ? "Dodavanje..." : "Dodaj u korpu"}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
-        <ProductPrice product={product} variant={selectedVariant} />
-
-        <Button
-          onClick={handleAddToCart}
-          disabled={
-            !inStock ||
-            !selectedVariant ||
-            !!disabled ||
-            isAdding ||
-            !isValidVariant
-          }
-          variant="primary"
-          className="w-full h-10"
-          isLoading={isAdding}
-          data-testid="add-product-button"
-        >
-          {!selectedVariant
-            ? "Select variant"
-            : !inStock || !isValidVariant
-            ? "Out of stock"
-            : "Add to cart"}
-        </Button>
+        {/* Mobile Sticky Bar */}
         <MobileActions
           product={product}
           variant={selectedVariant}
